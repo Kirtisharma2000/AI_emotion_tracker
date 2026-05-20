@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Prediction App</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>AI Emotion Prediction</h1>
+
+        <form id="emotionForm">
+
+            <label>Journal Text</label>
+
+            <textarea
+                id="journal_text"
+                placeholder="Write your thoughts here..."
+                required
+            ></textarea>
+
+            <label>Sleep Hours</label>
+            <input type="number" id="sleep_hours" value="6">
+
+            <label>Energy Level</label>
+            <input type="number" id="energy_level" value="3">
+
+            <label>Stress Level</label>
+            <input type="number" id="stress_level" value="3">
+
+            <label>Duration Minutes</label>
+            <input type="number" id="duration_min" value="10">
+
+            <label>Time Of Day</label>
+
+            <select id="time_of_day">
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="evening">Evening</option>
+                <option value="night">Night</option>
+            </select>
+
+            <button type="submit">
+                Predict Emotion
+            </button>
+
+        </form>
+
+        <div class="result-box" id="resultBox">
+
+            <h2>Prediction Result</h2>
+
+            <div id="result"></div>
+
+        </div>
+
+    </div>
+
+<script>
+
+document.getElementById("emotionForm").addEventListener(
+    "submit",
+    async function(e) {
+
+        e.preventDefault();
+
+        const payload = {
+
+            journal_text: document.getElementById("journal_text").value,
+
+            metadata: {
+
+                sleep_hours: parseFloat(
+                    document.getElementById("sleep_hours").value
+                ),
+
+                energy_level: parseInt(
+                    document.getElementById("energy_level").value
+                ),
+
+                stress_level: parseInt(
+                    document.getElementById("stress_level").value
+                ),
+
+                duration_min: parseInt(
+                    document.getElementById("duration_min").value
+                ),
+
+                time_of_day:
+                    document.getElementById("time_of_day").value
+            }
+        };
+
+        try {
+
+            const response = await fetch("/", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            console.log(data);
+
+            document.getElementById("resultBox").style.display = "block";
+
+            document.getElementById("result").innerHTML = `
+
+                <p><strong>Predicted State:</strong>
+                    ${data.predicted_state}
+                </p>
+
+                <p><strong>Intensity:</strong>
+                    ${data.predicted_intensity}
+                </p>
+
+                <p><strong>Confidence:</strong>
+                    ${(data.confidence * 100).toFixed(2)}%
+                </p>
+
+                <p><strong>Suggested Action:</strong>
+                    ${data.what_to_do}
+                </p>
+
+                <p><strong>When To Do:</strong>
+                    ${data.when_to_do}
+                </p>
+
+                <p><strong>Uncertain Flag:</strong>
+                    ${data.uncertain_flag}
+                </p>
+            `;
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Something went wrong!");
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>
